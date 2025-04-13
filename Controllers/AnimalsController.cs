@@ -43,7 +43,7 @@ public class AnimalsController : ControllerBase
     }
 
     // GET - animal by ID
-    [HttpGet("{id}")]
+    [HttpGet("id/{id}")]
     public IActionResult GetAnimal(int id)
     {
         if (Animals.Any(a => a.Id == id))
@@ -53,6 +53,60 @@ public class AnimalsController : ControllerBase
         
         return NotFound();
     }
+
+    // POST - new animal
+    [HttpPost]
+    public IActionResult AddAnimal(Animal animal)
+    {
+        animal.Id = GetNextId();
+        
+        Animals.Add(animal);
+        
+        return CreatedAtAction(nameof(GetAnimal), new { id = animal.Id }, animal);
+    }
     
-    
+    // PUT - update animal
+    [HttpPut("{id}")]
+    public IActionResult UpdateAnimal(int id, Animal animal)
+    {
+        var existingAnimal = Animals.FirstOrDefault(a => a.Id == id);
+
+        if (existingAnimal == null)
+        {
+            return NotFound();
+        }
+        
+        existingAnimal.Name = animal.Name;
+        existingAnimal.Category = animal.Category;
+        existingAnimal.Mass = animal.Mass;
+        existingAnimal.Color = animal.Color;
+        
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public IActionResult DeleteAnimal(int id)
+    {
+        var existingAnimal = Animals.FirstOrDefault(a => a.Id == id);
+
+        if (existingAnimal == null)
+        {
+            return NotFound();
+        }
+        
+        Animals.Remove(existingAnimal);
+        
+        return NoContent();
+    }
+
+    [HttpGet("name/{name}")]
+    public IActionResult GetAnimals(string name)
+    {
+        return Ok(Animals.Where(a => a.Name == name));
+    }
+
+    private int GetNextId()
+    {
+        return Animals.Max(a => a.Id) + 1;
+    }
 }
